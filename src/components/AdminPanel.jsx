@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { LayoutDashboard, ShoppingBag, Receipt, LogOut, ChevronDown, Plus, Trash2, Edit3, Archive, Eye } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Receipt, LogOut, ChevronDown, Plus, Trash2, Edit3, Archive } from 'lucide-react';
 
 export default function AdminPanel({ onBack }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState('products'); // 'dashboard' | 'products' | 'invoices'
+  const [activeTab, setActiveTab] = useState('products'); // 'products' | 'invoices'
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [products, setProducts] = useState([]);
   const [invoices, setInvoices] = useState([]);
 
-  // Form State Produk
+  // Form State
   const [editingId, setEditingId] = useState(null);
   const [name, setName] = useState('');
   const [baseType, setBaseType] = useState('Cola');
@@ -150,14 +150,14 @@ export default function AdminPanel({ onBack }) {
         <div className="flex justify-between items-center border-b border-white/10 pb-6">
           <div>
             <h1 className="font-onest font-bold text-xl text-white tracking-wider">ZHENS STORE — ADMIN PANEL</h1>
-            <p className="text-xs text-slate-400">Pengaturan Realtime Database Supabase</p>
+            <p className="text-xs text-slate-400">Pengaturan Realtime Database Cloud</p>
           </div>
           <button onClick={onBack} className="px-5 py-2 rounded-full border border-white/20 text-xs text-slate-300 hover:bg-white hover:text-black transition flex items-center gap-2">
             <LogOut className="w-3.5 h-3.5" /> KELUAR
           </button>
         </div>
 
-        {/* Tab Nav Menu */}
+        {/* Tab Nav Menu (Desktop) */}
         <div className="hidden md:flex gap-2 border-b border-white/10 pb-4">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -178,10 +178,39 @@ export default function AdminPanel({ onBack }) {
           })}
         </div>
 
+        {/* Dropdown Navigation Menu (Mobile) */}
+        <div className="md:hidden relative">
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="w-full bg-slate-900 border border-white/15 rounded-xl p-3 flex justify-between items-center text-xs font-mono text-white"
+          >
+            <span>{navItems.find(i => i.id === activeTab)?.label}</span>
+            <ChevronDown className={`w-4 h-4 transition ${isMobileMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {isMobileMenuOpen && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-white/15 rounded-xl overflow-hidden z-30 shadow-2xl p-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }}
+                    className={`w-full text-left px-4 py-2.5 rounded-lg text-xs font-mono flex items-center gap-2 ${
+                      activeTab === item.id ? 'bg-white text-black font-bold' : 'text-slate-300'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" /> {item.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         {/* TAB PRODUK */}
         {activeTab === 'products' && (
           <div className="space-y-6">
-            {/* Form */}
             <div className="mewah-glass rounded-2xl p-6 border border-white/10">
               <h2 className="font-onest font-bold text-sm text-white mb-4 border-b border-white/5 pb-2">
                 {editingId ? 'EDIT PRODUK' : 'TAMBAH PRODUK BARU'}
@@ -196,15 +225,15 @@ export default function AdminPanel({ onBack }) {
                   </select>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <input type="number" placeholder="Jumlah Tokens (misal: 30)" value={tokens} onChange={(e) => setTokens(e.target.value)} required className="bg-black/50 border border-white/10 rounded-xl p-3 text-xs text-white" />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <input type="number" placeholder="Jumlah Tokens (30)" value={tokens} onChange={(e) => setTokens(e.target.value)} required className="bg-black/50 border border-white/10 rounded-xl p-3 text-xs text-white" />
                   <input type="number" placeholder="Harga Topup (Rp)" value={price} onChange={(e) => setPrice(e.target.value)} required className="bg-black/50 border border-white/10 rounded-xl p-3 text-xs text-white" />
                   <input type="number" placeholder="Harga Coret (Rp)" value={originalPrice} onChange={(e) => setOriginalPrice(e.target.value)} required className="bg-black/50 border border-white/10 rounded-xl p-3 text-xs text-white" />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <input type="text" placeholder="URL Gambar Produk (Wikia/CDN)" value={image} onChange={(e) => setImage(e.target.value)} required className="sm:col-span-2 bg-black/50 border border-white/10 rounded-xl p-3 text-xs text-white" />
-                  <input type="text" placeholder="Badge (misal: BESTSELLER)" value={badge} onChange={(e) => setBadge(e.target.value)} className="bg-black/50 border border-white/10 rounded-xl p-3 text-xs text-white" />
+                  <input type="text" placeholder="URL Gambar Produk" value={image} onChange={(e) => setImage(e.target.value)} required className="sm:col-span-2 bg-black/50 border border-white/10 rounded-xl p-3 text-xs text-white" />
+                  <input type="text" placeholder="Badge (BESTSELLER)" value={badge} onChange={(e) => setBadge(e.target.value)} className="bg-black/50 border border-white/10 rounded-xl p-3 text-xs text-white" />
                 </div>
 
                 <textarea placeholder="Deskripsi Produk" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-xs text-white h-20" />
@@ -220,7 +249,6 @@ export default function AdminPanel({ onBack }) {
               </form>
             </div>
 
-            {/* List Table */}
             <div className="mewah-glass rounded-2xl p-6 overflow-x-auto border border-white/10">
               <table className="w-full text-left text-xs">
                 <thead>
@@ -238,7 +266,7 @@ export default function AdminPanel({ onBack }) {
                         <img src={p.image} alt="" className="w-8 h-8 object-contain rounded bg-black/40" />
                         {p.name}
                       </td>
-                      <td className="py-3">Rp{p.price.toLocaleString('id-ID')}</td>
+                      <td className="py-3">Rp{p.price?.toLocaleString('id-ID')}</td>
                       <td className="py-3">
                         {p.is_archived ? <span className="text-amber-400">[Archived]</span> : <span className="text-emerald-400">[Active]</span>}
                       </td>
@@ -277,7 +305,7 @@ export default function AdminPanel({ onBack }) {
                   <tr key={inv.id} className="border-b border-white/5">
                     <td className="py-3 font-bold text-white">{inv.roblox_username}</td>
                     <td className="py-3">{inv.product_name}</td>
-                    <td className="py-3 text-emerald-400 font-bold">Rp{inv.total_price.toLocaleString('id-ID')}</td>
+                    <td className="py-3 text-emerald-400 font-bold">Rp{inv.total_price?.toLocaleString('id-ID')}</td>
                     <td className="py-3 uppercase">{inv.payment_method}</td>
                     <td className="py-3">
                       <span className={`px-2 py-0.5 rounded font-bold ${inv.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
@@ -298,4 +326,4 @@ export default function AdminPanel({ onBack }) {
       </div>
     </div>
   );
-}
+           }
